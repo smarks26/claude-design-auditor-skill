@@ -1,6 +1,6 @@
 ---
 name: design-auditor
-version: 1.2.9
+version: 1.2.10
 description: "Audit designs against 19 professional rules across Figma files and code (HTML/CSS/React/Vue/Tailwind). Detects framework automatically, runs code superpowers (aria, focus, contrast, tokens, responsive, motion, forms, navigation, spacing), audits for dark patterns, ethical design, and Nielsen's usability heuristics. Outputs before/after code diffs, generates developer handoff reports, and converts wireframes into annotated dev-ready specs. Triggers on: check my design, review my UI, audit my layout, is this accessible, design review, typography check, color contrast, WCAG, a11y, pixel perfect, UI critique, Figma audit, CSS check, does this look good, dark patterns, ethical design, is this GDPR compliant, check my onboarding, is this manipulative, is my UI accessible, is this ethical, is my form accessible, is my dark mode correct, is this responsive, wireframe to spec, annotate my wireframe, heuristic review, Nielsen audit, usability heuristics."
 ---
 
@@ -1655,91 +1655,120 @@ Every audit report must use this exact structure — sections marked *(always)* 
 ---
 
 #### REPORT HEADER *(always)*
+
 ```
-## 🔍 Design Audit Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍  DESIGN AUDIT REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Input:** [Figma file name / component name / "Pasted HTML" / "React component"]
-**Type:** [Figma MCP / HTML / React / Vue / Screenshot]
-**Framework:** [detected framework — e.g. "React + Tailwind CSS"] *(code input only)*
-**Confidence:** [🟢 High / 🟡 Medium / 🔴 Low] — [one-sentence reason]
-**Scope:** [Frame name + page, OR filename, OR "Single component"]
+| Field        | Value                                    |
+|--------------|------------------------------------------|
+| Input        | [component/page name]                    |
+| Type         | [Figma MCP / HTML / React / Screenshot]  |
+| Framework    | [detected framework] *(code only)*       |
+| Confidence   | [🟢 High / 🟡 Medium / 🔴 Low]           |
+| Scope        | [frame name + page / filename]           |
+| Date         | [date]                                   |
 
-*(Figma only — when 2+ pages exist)*
-**File:** [N] pages — auditing '[page name]' (page [N] of [N])
+*(Figma only)*
+| Component Health | [N]% coverage · [N] detached · [N] unnamed |
+| Code Connect     | [N] mapped · [N] unmapped *(if available)* |
 
-*(Figma only — always)*
-**Component health:** [N]% coverage · [N] detached instances · [N] unnamed layers
-
-*(Code only — always)*
-**Token coverage:** colors [N]% · spacing [N]% · radius [N]% · shadows [N]%
-
-*(Medium confidence only)*
-⚠️ **Medium confidence audit** — input was a screenshot. Values are estimated. For an exact
-audit, share the Figma file or component code.
+*(Code only)*
+| Token Coverage | colors [N]% · spacing [N]% · radius [N]% |
 ```
+
+> ⚠️ **Medium confidence audit** — input was a screenshot. Values are estimated.
+> For an exact audit, share the Figma file or code.
+> *(Only show this block when confidence is Medium)*
 
 ---
 
 #### SCORES *(always)*
+
 ```
-### Overall Score: [X/100]
-**100 − ([N] × 🚫 12) − ([N] × 🔴 8) − ([N] × 🟡 4) − ([N] × 🟢 1) = [X]/100**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊  SCORES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Overall       [██████████░░░░░░░░░░]  [X]/100
+Accessibility [████████░░░░░░░░░░░░]  [X]/100  *(Cat 2, 6, 7, 16)*
+Ethics        [███████████████░░░░░]  [X]/100  *(Cat 18)*
+Usability     [████████████░░░░░░░░]  [X]/100  *(Cat 19)*
+
+Score formula: 100 − ([N] × 🚫 12) − ([N] × 🔴 8) − ([N] × 🟡 4) − ([N] × 🟢 1) = [X]/100
+
 [One sentence — what dragged the score down most.]
-*(Omit 🚫 line from arithmetic if no Blockers found)*
+```
 
-### Accessibility Score: [X/100]  *(Categories 2, 6, 7, 16)*
-[Band label: WCAG AA compliant / minor gaps / significant gaps / failing]
-*(Append "⚠️ Contains legal compliance failures" if any 🚫 Blockers present)*
+**Progress bar generation rule:**
+- Bar is 20 characters wide. Fill = round(score / 5) filled blocks.
+- Use `█` for filled, `░` for empty.
+- Example: 68/100 → 14 filled → `██████████████░░░░░░`
+- Omit Ethics and Usability bars if those categories were not audited.
+- Append `⚠️ Legal compliance failures` after Accessibility score if any 🚫 Blockers present.
 
-### Ethics Score: [X/100]  *(Category 18)*
-[Band label: Ethically sound / minor concerns / significant manipulation risk / deliberately deceptive]
-*(Only show if any ethics issues were found, or if the audit was full scope)*
-
-### Usability Score: [X/100]  *(Category 19)*
-[Band label: Heuristically sound / 사용성 기준 충족 · minor gaps / 사소한 문제 · significant issues / 심각한 문제 · fundamental failures / 근본적 실패]
-*(Only show if Cat 19 was audited)*
-*(Note EN: "H4, H5, H8, H9 covered by Cat 5, 7, 4, 11/12." KO: "H4, H5, H8, H9는 각각 Cat 5, 7, 4, 11/12에서 다룹니다.")*
-
+```
 ### Score by Category
-| Category | Score | Issues |
-|---|---|---|
-| Typography | X/10 | 0 🚫, 1 🔴, 0 🟡 |
-| Color & Contrast | X/10 | 1 🚫, 0 🔴, 2 🟡 |
-| [other audited categories] | X/10 | ... |
-*(Only include categories that were audited. Skip clearly N/A ones.)*
+
+| Category | Score | 🚫 | 🔴 | 🟡 | 🟢 |
+|---|---|---|---|---|---|
+| 1 · Typography | X/10 | 0 | 1 | 2 | 0 |
+| 2 · Color & Contrast | X/10 | 1 | 0 | 1 | 0 |
+| [other audited categories] | X/10 | — | — | — | — |
+
+*(Only include audited categories. Use — for unchecked severity levels.)*
 ```
 
 ---
 
 #### ISSUES *(always — follow deduplication rules)*
+
 ```
-### 🚫 Blockers (−12pts each) *(legal/compliance violations — cannot ship)*
-- **[Issue name]** — [What's wrong] → Fix: [Specific how-to]
-  Legal basis: [WCAG SC X.X.X / GDPR Article X / PECR]
-  *Nodes: [id1], [id2] (+N more)* *(Figma)* / *Line [N]* *(code)*
-  → Want me to fix this? I can apply it directly.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚫  BLOCKERS  ·  cannot ship  ·  −12pts each
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*(Omit this entire section if no Blockers found)*
 
-### 🔴 Critical Issues (−8pts each)
-- **[Issue name]** — [What's wrong] → Fix: [Specific how-to]
-  Why: [One sentence rule reference]
-  *Nodes: [id1], [id2] (+N more)* *(Figma)* / *Line [N]* *(code)*
-  → Want me to fix this? I can apply it directly.
+> **[Issue name]**
+> [What's wrong — one sentence]
+> Fix: [Specific how-to]
+> Legal basis: [WCAG SC X.X.X / GDPR Article X]
+> Location: [node IDs / line numbers]
 
-### 🟡 Warnings (−4pts each)
-- **[Issue name]** — [What's wrong] → Fix: [Specific how-to]
-  Why: [One sentence rule reference]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴  CRITICAL ISSUES  ·  must fix  ·  −8pts each
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-### 🟢 Tips (−1pt each)
-- **[Issue name]** — [What's wrong] → Fix: [Specific how-to]
+> **[Issue name]**
+> [What's wrong — one sentence]
+> Fix: [Specific how-to]
+> Why: [One sentence rule reference]
+> Location: [node IDs / line numbers]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🟡  WARNINGS  ·  should fix  ·  −4pts each
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+> **[Issue name]**
+> [What's wrong] → Fix: [how-to]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🟢  TIPS  ·  nice to have  ·  −1pt each
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+> **[Issue name]** — [What's wrong] → [Fix]
 ```
-
-*(Omit the 🚫 Blockers section entirely if none are found — do not show an empty section)*
 
 ---
 
 #### POSITIVES *(always — min 2, max 4)*
+
 ```
-### ✅ What's Working Well
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅  WHAT'S WORKING WELL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 - [Specific genuine positive — not generic praise]
 - [Specific genuine positive]
 ```
@@ -1747,29 +1776,42 @@ audit, share the Figma file or component code.
 ---
 
 #### CROSS-FRAME INCONSISTENCIES *(conditional — only when 2+ frames audited)*
+
 ```
-### ⚡ Cross-Frame Inconsistencies
-- **[Property]** differs: [Frame A] = [value] vs [Frame B] = [value]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡  CROSS-FRAME INCONSISTENCIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| Property | Frame A | Frame B |
+|---|---|---|
+| [Property] | [value] | [value] |
 ```
 
 ---
 
 #### RE-AUDIT DELTA *(conditional — only on 2nd+ audit in session)*
+
 ```
-### 📈 Progress Since Last Audit
-Score: [prev] → [current] ([+/−N] pts)
-✅ Fixed: [category] (+Npts), [category] (+Npts)
-🔴 Still open: [N] critical issues remaining
-New issues found: [N]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📈  PROGRESS SINCE LAST AUDIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Score:    [prev] → [current]  ([+/−N] pts)
+Fixed:    ✅ [category] (+Npts)  ✅ [category] (+Npts)
+Open:     🔴 [N] critical issues remaining
+New:      [N] new issues found
 ```
 
 ---
 
 #### REPORT FOOTER *(always)*
+
 ```
----
-*Audit run with Design Auditor Skill v1.2.9 · [input type] · [confidence level]*
-*Re-audit after fixes to track progress. / 수정 후 재감사를 실행하여 진행 상황을 추적하세요.*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*Audit run with Design Auditor Skill v1.2.10 · [input type] · [confidence level]*
+*Re-audit after fixes to track progress.*
+*수정 후 재감사를 실행하여 진행 상황을 추적하세요.*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
@@ -1902,20 +1944,39 @@ If the user shares updated code or a new Figma link before selecting Re-audit:
 **If "Developer handoff report"** → produce a structured handoff document using this exact template:
 
 ```
-# Developer Handoff — Design Audit
-**Component/Page:** [name]
-**Audit date:** [date]
-**Overall score:** [X/100] · Accessibility: [X/100]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🛠️  DEVELOPER HANDOFF REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
----
+| Field          | Value                          |
+|----------------|--------------------------------|
+| Component/Page | [name]                         |
+| Audit date     | [date]                         |
+| Overall score  | [X]/100                        |
+| A11y score     | [X]/100                        |
+| Ethics score   | [X]/100  *(if audited)*        |
+| Usability score| [X]/100  *(if audited)*        |
 
-## Critical fixes required before shipping
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚫  BLOCKERS — fix before any other work
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*(Omit section if no Blockers)*
 
-| # | Issue | Location | Fix | Value |
+| # | Issue | Location | Fix | Legal basis |
 |---|---|---|---|---|
-| 1 | [issue name] | [node ID / line N] | [what to change] | [exact value] |
+| 1 | [issue] | [node / line] | [fix] | [WCAG SC / GDPR] |
 
-## CSS / Token spec
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴  CRITICAL FIXES — required before shipping
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| # | Issue | Location | Fix | Exact value |
+|---|---|---|---|---|
+| 1 | [issue] | [node / line] | [what to change] | [value] |
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎨  CSS / TOKEN SPEC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 | Property | Current | Correct | Token |
 |---|---|---|---|
@@ -1923,22 +1984,56 @@ If the user shares updated code or a new Figma link before selecting Re-audit:
 | padding | 13px | 12px | --spacing-3 |
 | border-radius | 7px | 8px | --radius-md |
 
-## Accessibility checklist
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+♿  ACCESSIBILITY CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 - [ ] [aria fix needed]
 - [ ] [focus state needed]
 - [ ] [label needed]
 
-## Warnings (non-blocking)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔵  CODE CONNECT MAPPING  *(if available)*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| Figma Component | Code Component | Status |
+|---|---|---|
+| Button/Primary | <Button variant="primary"> | ✅ Mapped |
+| Modal/Confirm | — | 🟡 Unmapped |
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🟡  WARNINGS — non-blocking, should fix
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 - [warning 1]
 - [warning 2]
 
-## What's already correct
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅  WHAT'S ALREADY CORRECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 - [positive 1]
 - [positive 2]
 
----
-*Generated by Design Auditor Skill v1.2.9*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*Generated by Design Auditor Skill v1.2.10*
+*Design Auditor Skill v1.2.10 생성*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+**Korean note — 개발자 전달 보고서:** When the user is in Korean mode, render the handoff report with these translations:
+- Title: `🛠️ 개발자 전달 보고서`
+- Field labels: `컴포넌트/페이지` · `감사 날짜` · `전체 점수` · `접근성 점수` · `윤리 점수` *(감사된 경우)* · `사용성 점수` *(감사된 경우)*
+- Section headers:
+  - `🚫 블로커 — 다른 작업보다 먼저 수정` · *(블로커 없으면 섹션 생략)*
+  - `🔴 치명적 수정 — 배포 전 필수`
+  - `🎨 CSS / 토큰 스펙`
+  - `♿ 접근성 체크리스트`
+  - `🔵 코드 커넥트 매핑` *(사용 가능한 경우)*
+  - `🟡 경고 — 비차단, 수정 권장`
+  - `✅ 이미 올바른 항목`
+- Table column headers: `이슈` · `위치` · `수정 방법` · `법적 근거` · `정확한 값` · `속성` · `현재값` · `올바른 값` · `토큰` · `Figma 컴포넌트` · `코드 컴포넌트` · `상태`
+- Footer: `*Design Auditor Skill v1.2.10 생성*`
 
 **If "Export report"** → create a downloadable `.md` file via file_create containing:
 - The full audit report in the Strict Output Template format
@@ -1965,7 +2060,7 @@ Content to include in the Canva doc:
   3. Issue summary table: 🚫 [N] Blockers · 🔴 [N] Critical · 🟡 [N] Warnings · 🟢 [N] Tips
   4. Top 3 critical issues with one-line fix each
   5. What's working well (2–3 positives)
-  6. Footer: "Generated by Design Auditor Skill v1.2.9"
+  6. Footer: "Generated by Design Auditor Skill v1.2.10"
 
 After generating:
   → Present the Canva design to the user
@@ -1984,92 +2079,110 @@ If Canva connector is unavailable:
 **Spec generated:** [date]
 **Fidelity:** Wireframe — values are recommended, not measured / 와이어프레임 — 값은 권장사항이며 실측값이 아닙니다
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📐  LAYOUT & DIMENSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*(~ prefix = estimated. Confirm with designer before development.)*
 
-### Layout & Dimensions
 | Element | Width | Height | Notes |
 |---|---|---|---|
 | [Container] | [value or "full width"] | [value or "auto"] | [note] |
 | [Section] | [value] | [value] | [note] |
-*(Extract from Figma layer data where available. Estimate from screenshot where not.)*
-*(Flag estimated values with ~ prefix: ~320px)*
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📏  SPACING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*(All values snapped to 8pt grid. Arbitrary wireframe values adjusted to nearest multiple.)*
 
-### Spacing
 | Location | Value | Notes |
 |---|---|---|
 | Page margins | 16px (mobile) / 48px (desktop) | Standard if not specified |
 | Section gap | [value] | Between major sections |
 | Component padding | [value] | Inside cards/containers |
-*(Recommend 8pt grid values. If wireframe shows rough spacing, snap to nearest grid value.)*
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔤  TYPOGRAPHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-### Typography
 | Role | Font size | Weight | Line height | Notes |
 |---|---|---|---|---|
 | Heading | [value] | Bold | 1.2× | |
 | Subheading | [value] | SemiBold | 1.35× | |
 | Body | 16px | Regular | 1.5× | Minimum recommended |
 | Caption | 13px | Regular | 1.4× | |
-*(Fill with wireframe values where readable. Use standard scale where not specified.)*
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧩  COMPONENTS REQUIRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*(Infer missing states — every interactive element needs: default, hover/focus, disabled)*
 
-### Components Required
-List every UI component visible or implied in the wireframe:
-| Component | Variant needed | States required | Notes |
+| Component | Variant | States required | Notes |
 |---|---|---|---|
 | [Button] | [Primary/Secondary/Ghost] | Default, Hover, Loading, Disabled | |
 | [Input] | [Text/Select/Checkbox] | Default, Focus, Error, Disabled | |
 | [Card] | [Standard] | Default, Hover | |
-*(Infer missing states — every interactive element needs at minimum: default, hover/focus, disabled)*
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✍️  COPY PLACEHOLDERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*(Buttons are verbs. Errors say what went wrong + how to fix.)*
 
-### Copy Placeholders
-For every text placeholder in the wireframe, suggest final copy:
 | Location | Placeholder shown | Suggested copy | Notes |
 |---|---|---|---|
-| [CTA button] | "Button" | "Get started" or "[action verb]" | Use specific verb |
-| [Empty state] | "No data" | "No [items] yet — [action to create first]" | |
-| [Error state] | "Error" | "Something went wrong — [specific next step]" | |
-*(Follow microcopy.md rules: buttons are verbs, errors say what went wrong + how to fix)*
+| [CTA button] | "Button" | "Get started" | Use specific verb |
+| [Empty state] | "No data" | "No [items] yet — [action]" | |
+| [Error state] | "Error" | "Something went wrong — [next step]" | |
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🖱️  INTERACTION NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-### Interaction Notes
-Document implied interactions not shown in the wireframe:
 - [ ] [Element]: on click → [expected behaviour]
 - [ ] [Form]: validate on blur, not on submit
 - [ ] [Modal trigger]: trap focus when open, restore on close
 - [ ] [Scroll]: [sticky header / infinite scroll / paginated?]
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+♿  ACCESSIBILITY REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-### Accessibility Requirements
-Minimum requirements for this component/screen:
 - [ ] All interactive elements have visible focus states
 - [ ] Form inputs have visible labels (not placeholder-only)
 - [ ] Images have alt text slots
 - [ ] Reading order: [describe logical DOM order]
 - [ ] Keyboard navigation: [describe tab flow]
-- [ ] [Any WCAG-specific requirements based on the component type]
+- [ ] [Any WCAG-specific requirements based on component type]
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❓  OPEN QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*(Gaps in the wireframe that must be decided before development)*
 
-### Open Questions
-Things the wireframe doesn't answer that must be decided before development:
 - [ ] [Question about content/data source]
 - [ ] [Question about edge cases — empty state, max content, overflow]
 - [ ] [Question about responsive behaviour at mobile breakpoint]
 - [ ] [Question about loading state if this fetches data]
 
 ---
-*Generated by Design Auditor Skill v1.2.9 · Wireframe to Spec mode*
+*Generated by Design Auditor Skill v1.2.10 · Wireframe to Spec mode*
+*디자인 스펙 문서 · Design Auditor Skill v1.2.10 생성*
 *Values marked ~ are estimated. Confirm with designer before development.*
+*~ 표시 값은 추정치입니다. 개발 전 디자이너에게 확인하세요.*
 ```
+
+**Korean note — 와이어프레임 스펙:** When the user is in Korean mode, translate the spec as follows:
+- Title: `## 📐 디자인 스펙 — [컴포넌트/화면 이름]`
+- Field labels: `입력 유형` · `스펙 생성일` · `충실도`
+- Section headers (keep emoji, translate label):
+  - `📐 레이아웃 & 치수` · *(~ 접두사 = 추정치. 개발 전 디자이너에게 확인하세요.)*
+  - `📏 간격` · *(모든 값은 8pt 그리드에 맞춤. 와이어프레임의 임의 값은 가장 가까운 배수로 조정.)*
+  - `🔤 타이포그래피`
+  - `🧩 필요한 컴포넌트` · *(누락된 상태 추론 — 모든 인터랙티브 요소에 필요: 기본, 호버/포커스, 비활성화)*
+  - `✍️ 카피 플레이스홀더` · *(버튼은 동사. 오류는 무엇이 잘못됐는지 + 수정 방법을 설명.)*
+  - `🖱️ 인터랙션 노트`
+  - `♿ 접근성 요구사항`
+  - `❓ 미결 질문` · *(개발 전에 결정해야 할 와이어프레임의 공백)*
+- Table column headers: `요소` · `너비` · `높이` · `비고` · `위치` · `값` · `역할` · `폰트 크기` · `굵기` · `행 높이` · `컴포넌트` · `변형` · `필요한 상태` · `위치` · `표시된 플레이스홀더` · `제안 문구`
 
 **Wireframe to Spec mode behaviour:**
 - Do NOT run a scored audit — no score, no severity labels, no issue list

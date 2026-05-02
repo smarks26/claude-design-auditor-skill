@@ -164,6 +164,30 @@ design-auditor/
 
 ## Changelog
 
+### v1.2.10
+
+**Dev Handoff Report, Wireframe to Spec — restructured. Korean coverage for both.**
+
+**Dev Handoff Report restructured:**
+- `━━━` dividers between all sections for consistent visual separation
+- Blockers separated into their own section (`🚫 BLOCKERS — fix before any other work`) above Critical Fixes — previously grouped together
+- All four scores in the metadata table: Overall, A11y, Ethics, Usability (with conditional notes for Ethics and Usability)
+- Code Connect mapping table included in template
+- Consistent `━━━`-wrapped footer
+
+**Wireframe to Spec restructured:**
+- All 8 sections now have `━━━` dividers with emoji headers (📐 📏 🔤 🧩 ✍️ 🖱️ ♿ ❓)
+- Context notes moved into section headers directly after each `━━━` block, instead of scattered inline
+
+**Korean support added for both:**
+- Dev Handoff Report — Korean note block: title, all 6 field labels, all 7 section headers, all 12 table column headers, footer
+- Wireframe to Spec — bilingual footer lines + Korean note block: title, field labels, all 8 section headers with context notes, table column headers
+
+**README:**
+- v1.0.0–v1.2.4 changelog entries collapsed into a `<details>` block
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
 ### v1.2.9
 
 **Korean language coverage — full audit pass**
@@ -292,6 +316,9 @@ Accessibility Score updated: Blockers use −12. Any Blocker appends "⚠️ Con
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 
+<details>
+<summary><strong>v1.0.0–v1.2.4</strong> — earlier versions</summary>
+
 ### v1.2.4
 
 **New: Category 19 — Ethical Design & Dark Patterns**
@@ -384,6 +411,8 @@ Code parity complete — all 17 categories now check from source code.
 - Initial release: 13 audit categories, 7 reference files
 
 ------------------------------------------------------------------------------------------------------------------------------------------
+
+</details>
 
 ## Contributing
 
