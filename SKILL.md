@@ -1,7 +1,7 @@
 ---
 name: design-auditor
-version: 1.2.10
-description: "Audit designs against 19 professional rules across Figma files and code (HTML/CSS/React/Vue/Tailwind). Detects framework automatically, runs code superpowers (aria, focus, contrast, tokens, responsive, motion, forms, navigation, spacing), audits for dark patterns, ethical design, and Nielsen's usability heuristics. Outputs before/after code diffs, generates developer handoff reports, and converts wireframes into annotated dev-ready specs. Triggers on: check my design, review my UI, audit my layout, is this accessible, design review, typography check, color contrast, WCAG, a11y, pixel perfect, UI critique, Figma audit, CSS check, does this look good, dark patterns, ethical design, is this GDPR compliant, check my onboarding, is this manipulative, is my UI accessible, is this ethical, is my form accessible, is my dark mode correct, is this responsive, wireframe to spec, annotate my wireframe, heuristic review, Nielsen audit, usability heuristics."
+version: 1.2.11
+description: "Audit designs against 19 professional rules across Figma files and code (HTML/CSS/React/Vue/Tailwind). Detects framework and design system (MUI, Chakra, shadcn/ui, Ant Design, Radix, Bootstrap) automatically. Runs code superpowers across all 19 categories (aria, focus, contrast, tokens, responsive, motion, forms, navigation, spacing, visual hierarchy, consistency, states, microcopy, elevation, iconography/SVG). Flags color blindness risk per failing pair. Detects Figma Auto Layout gaps. Audits for dark patterns, ethical design, and Nielsen's usability heuristics. Outputs before/after code diffs, generates developer handoff reports, and converts wireframes into annotated dev-ready specs. Supports English and Korean throughout. Triggers on: check my design, review my UI, audit my layout, is this accessible, design review, typography check, color contrast, WCAG, a11y, pixel perfect, UI critique, Figma audit, CSS check, does this look good, dark patterns, ethical design, is this GDPR compliant, check my onboarding, is this manipulative, is my UI accessible, is this ethical, is my form accessible, is my dark mode correct, is this responsive, wireframe to spec, annotate my wireframe, heuristic review, Nielsen audit, usability heuristics, 디자인 검토, 접근성 확인, 색상 대비, 다크 패턴, 와이어프레임 스펙."
 ---
 
 # Design Checker Skill
@@ -261,8 +261,8 @@ If no → run standard audit at Early concept stage with relaxed severity.
 | Code file | Accessibility, Design Tokens, States, Color & Contrast, Typography |
 
 State at top of report in the user's detected language:
-- English: *"Quick audit — 5 categories selected for your [type]. Run a full audit to check all 17."*
-- Korean: *"빠른 감사 — [유형]에 맞는 5개 카테고리를 선택했습니다. 전체 17개 항목을 확인하려면 전체 감사를 실행하세요."*
+- English: *"Quick audit — 5 categories selected for your [type]. Run a full audit to check all 19."*
+- Korean: *"빠른 감사 — [유형]에 맞는 5개 카테고리를 선택했습니다. 전체 19개 항목을 확인하려면 전체 감사를 실행하세요."*
 
 **Severity thresholds by stage** (apply silently based on inferred or selected stage):
 
@@ -288,7 +288,7 @@ Identify what type of UI was submitted and weight categories accordingly. Never 
 
 | Detected Type | Signals | Priority Categories | Skip |
 |---|---|---|---|
-| **Full page / screen** | Multiple sections, nav, hero, footer | All 17 | Nothing |
+| **Full page / screen** | Multiple sections, nav, hero, footer | All 19 | Nothing |
 | **Form** | Input fields, labels, submit button | Accessibility, States, Microcopy, Spacing, Typography | i18n (unless multilingual signals) |
 | **Modal / dialog** | Overlay, close button, constrained width | Spacing, States, Microcopy, Accessibility, Elevation | Navigation, Responsiveness |
 | **Navigation** | Nav bar, tabs, sidebar, breadcrumbs | Navigation, Accessibility, States, Responsiveness, Iconography | Elevation, Corner Radius |
@@ -297,8 +297,8 @@ Identify what type of UI was submitted and weight categories accordingly. Never 
 | **Single component** | Button, input, badge, avatar alone | Typography, Color, Spacing, Accessibility, States, Corner Radius, Elevation | Navigation, i18n, Responsiveness |
 
 Always state detected type and skipped categories at the top of the report in the user's detected language:
-- English: *"Detected: Form — auditing 12 of 17 categories. Skipped: i18n & RTL, Navigation, Responsiveness, Motion, Design Tokens (no code provided)."*
-- Korean: *"감지된 유형: 폼 — 17개 카테고리 중 12개를 감사합니다. 건너뜀: 국제화 및 RTL, 내비게이션, 반응형, 모션, 디자인 토큰 (코드 없음)."*
+- English: *"Detected: Form — auditing 14 of 19 categories. Skipped: i18n & RTL, Navigation, Responsiveness, Motion, Design Tokens (no code provided)."*
+- Korean: *"감지된 유형: 폼 — 19개 카테고리 중 14개를 감사합니다. 건너뜀: 국제화 및 RTL, 내비게이션, 반응형, 모션, 디자인 토큰 (코드 없음)."*
 
 ---
 
@@ -376,6 +376,32 @@ Flag as issues:
   unnamed_pct > 20% → 🟡 "High proportion of unnamed layers ([N]) — slows handoff and makes edits harder"
   detached_instances > 0 → 🟡 "N detached component instances — updates to the main component won't propagate"
   component_pct < 30% → 🔴 "Low component coverage ([N]%) — most elements are raw frames, not reusable components"
+```
+
+**Auto-Layout compliance scan (run automatically on every Figma audit):**
+While reading the layer tree from `get_design_context`, check for absolute-position frames that should be auto-layout:
+
+```
+For every Frame or Group in the tree:
+  - If it contains 2+ child layers arranged in a clear row or column pattern
+    AND it has no layoutMode (i.e. not using Auto Layout) → flag as 🟡 Warning
+    "Frame '[name]' contains [N] stacked/row children but uses manual positioning —
+     convert to Auto Layout for responsive behaviour and easier spacing control"
+
+  - If a Frame has children with hardcoded x/y absolute positions AND the frame
+    has a fixed width → 🟡 Warning
+    (absolute children won't reflow when content changes)
+
+  - If layoutMode = HORIZONTAL or VERTICAL but itemSpacing or padding values
+    are not on the 8pt grid → 🟡 (same as Cat 3 spacing check)
+
+Positive signals to acknowledge:
+  → Frames using Auto Layout (layoutMode = HORIZONTAL or VERTICAL) → ✅
+  → Consistent itemSpacing across sibling Auto Layout frames → ✅
+  → "Min W" / "Fill" constraints used instead of fixed widths → ✅
+
+Show in report header on Figma audits when manual-position frames are found:
+  "Auto Layout: [N]% of frames using Auto Layout · [N] frames with manual positioning"
 ```
 
 ### F3: Get a Screenshot
@@ -673,6 +699,87 @@ This declaration affects:
   - Which categories get code-specific superpower checks (see Cat 6, 8, 9, 13, 17)
 ```
 
+### Design System Detection (run after framework detection)
+
+After identifying the framework, check for a known component library or design system. This changes how issues are interpreted — overriding a design system's defaults is often the root cause, not the symptom.
+
+```
+Detection signals:
+
+  Material UI (MUI) / Joy UI
+    → import { Button, TextField, ... } from '@mui/material' or '@mui/joy'
+    → sx prop usage: sx={{ color: '...' }} or sx={{ p: 2 }}
+    → theme.palette.*, theme.spacing(), ThemeProvider
+
+  Chakra UI
+    → import { Box, Stack, ... } from '@chakra-ui/react'
+    → <Box p={4} color="gray.700"> — Chakra prop shorthand
+    → ChakraProvider in root
+
+  shadcn/ui
+    → import { Button } from "@/components/ui/button"
+    → cn() utility from "lib/utils" for class merging
+    → Radix UI primitives as peer deps (package.json: @radix-ui/*)
+
+  Ant Design
+    → import { Button, Form, ... } from 'antd'
+    → ConfigProvider in root
+
+  Radix UI (headless)
+    → import * as Dialog from '@radix-ui/react-dialog'
+    → Direct Radix primitive imports
+
+  Bootstrap / React-Bootstrap
+    → className="btn btn-primary" or import { Button } from 'react-bootstrap'
+    → bootstrap CSS imported
+
+  None detected → treat as custom/vanilla (standard audit rules apply)
+
+Declare at the top of the audit:
+  "Detected: React + MUI v5"
+  "Detected: Next.js + shadcn/ui + Tailwind CSS"
+  "Detected: Vue 3 + Ant Design"
+```
+
+**Design system — system-specific issue types (add these to relevant categories when a DS is detected):**
+
+```
+MUI / Joy UI:
+  Cat 6 — Accessibility:
+    → button:focus { outline: none } overriding MUI's focus-visible → 🔴 Critical
+      "Overriding MUI's focus-visible breaks keyboard accessibility — remove the override
+       or use theme.components.MuiButton.styleOverrides.root with focus-visible targeting"
+    → Calling .MuiButton-root CSS override without :focus-visible scope → 🟡
+  Cat 17 — Tokens:
+    → Hardcoded color values bypassing theme.palette → 🟡 "Use theme.palette.primary.main"
+    → sx={{ fontSize: '14px' }} instead of sx={{ fontSize: 'body2.fontSize' }} → 🟢 Tip
+
+Chakra UI:
+  Cat 3 — Spacing:
+    → <Box p="13px"> instead of <Box p={3}> (Chakra spacing scale: 3 = 12px) → 🟡
+    → Arbitrary spacing string bypassing Chakra's scale → 🟡
+  Cat 17 — Tokens:
+    → Hardcoded color strings bypassing the Chakra color scheme ("gray.700" is correct; "#374151" is not) → 🟡
+
+shadcn/ui:
+  Cat 5 — Consistency:
+    → Direct className overrides on shadcn components without using the cn() utility → 🟡
+      (bypasses variant system — use variant prop or extend via cva())
+    → Multiple custom button implementations alongside shadcn's Button → 🟡
+
+Ant Design:
+  Cat 5 — Consistency:
+    → Direct style prop overrides on antd components instead of ConfigProvider/theme → 🟡
+  Cat 6 — Accessibility:
+    → antd Form.Item without name prop → 🟡 (label/input association breaks)
+
+General rule for all design systems:
+  → If a DS is detected AND a hardcoded value overrides its scale → always flag
+    with the system-specific fix path, not just the generic CSS fix
+  → Never flag system defaults as issues — only flag when the defaults are
+    overridden in a way that breaks the design or accessibility
+```
+
 ### Typography extraction from code
 ```
 Collect all unique font-size values across the codebase/component:
@@ -827,7 +934,7 @@ Check each category. Skip clearly inapplicable ones. Mark each issue:
 
 **Scoring formula (always show this explicitly in every report):**
 ```
-Score = 100 − (criticals × 8) − (warnings × 4) − (tips × 1)
+Score = 100 − (blockers × 12) − (criticals × 8) − (warnings × 4) − (tips × 1)
 ```
 Show the arithmetic inline so the user can see exactly how the score was reached. Example:
 > Score: 100 − (3 × 8) − (5 × 4) − (2 × 1) = 100 − 24 − 20 − 2 = **54/100**
@@ -884,10 +991,36 @@ Introduce with one sentence in the user's detected language:
 - [ ] **Palette size** — 1 primary + 1 accent + neutrals beats many colors.
 - [ ] **Color consistency** — Same color = same meaning everywhere.
 - [ ] **Low-contrast combos** — Light gray on white, yellow on white, white on light blue all commonly fail.
+- [ ] **Color blindness risk** — Red/green pairs (most common — affects ~8% of men), blue/yellow pairs, and low-saturation combinations all pose risk. Never rely on hue alone to convey state.
 
 **→ Widget trigger:** If any contrast issue is found — whether from `get_variable_defs` color token analysis (preferred) or from visual screenshot assessment — use the Visualizer to render the **Contrast Checker** widget. Pre-populate the foreground and background hex values from the failing pair. When contrast was calculated from design tokens, show the exact token names alongside the hex values (e.g. `color/text/secondary #8A8A8A on color/surface/default #FFFFFF — ratio: 3.1:1 ❌`). The widget shows all 5 WCAG pass/fail levels live, a real text preview at heading/body/label sizes, and automatically calculates the nearest passing hex value as a fix suggestion. Introduce with one sentence in the user's detected language:
 - English: *"Use this to test fixes — the widget calculates the exact color adjustment needed."*
 - Korean: *"이 도구로 수정 사항을 바로 테스트해 보세요 — 통과 가능한 정확한 색상값을 자동으로 계산해 드립니다."*
+
+**Color blindness context — add to every Cat 2 color issue flagged:**
+For each failing or risky color pair, append a one-line color blindness note:
+```
+Pair type → Color blindness note to append:
+
+  Red + Green (e.g. red error on green success, red text on green bg):
+    → "⚠️ Deuteranopia/Protanopia risk — red and green are indistinguishable for ~8% of men.
+       Add a non-color signal: icon, pattern, or label."
+
+  Red/Orange + background (error states, alerts):
+    → "⚠️ Protanopia risk — reds appear dark brown/black. Pair with an icon (✕, ⚠) and text."
+
+  Blue + Yellow / Blue + Orange:
+    → "⚠️ Tritanopia risk — blue and yellow are confused. Use contrast + shape cues."
+
+  Low saturation pairs (grey on grey, muted tones):
+    → "⚠️ All types — low-saturation pairs affect all color blindness types. Increase contrast."
+
+  High-contrast black/white pairs:
+    → No color blindness note needed — safe for all types.
+
+Only add the note when the pair is actually present in the design. Never add generic warnings
+to every color. One line, appended after the fix suggestion.
+```
 
 ---
 
@@ -948,6 +1081,36 @@ Logical properties (RTL safety):
 - [ ] **Size = importance** — Bigger = more important. Check it maps correctly.
 - [ ] **Contrast = importance** — High contrast = foreground. Check it maps correctly.
 
+**📋 Code input: direct checks available (run these automatically)**
+```
+Font-size prominence mapping:
+  → Collect all font-size values across the file (same as Cat 1 extraction)
+  → Map: largest = most prominent, most frequent = body, smallest = least prominent
+  → If the largest font-size element is not the primary CTA or heading → 🟡 Warning
+    (visual hierarchy may be inverted — the biggest thing should matter most)
+  → If body copy and a CTA/button share the same font-size → 🟡 Warning
+    (no size signal to distinguish the action from surrounding text)
+
+z-index stacking ladder:
+  → Collect all z-index values across the file
+  → Map relative stacking: base content (0–1) < sticky headers (10–20) < dropdowns (100–200)
+    < modals (300–400) < tooltips (500+) < dev overlays (9999)
+  → z-index values not following a logical step ladder → 🟡 Warning
+    (e.g. modal at z-index 5 when a sticky header is at z-index 10 = modal renders behind header)
+  → Multiple elements at the same z-index in potentially overlapping contexts → 🟡
+  → z-index: 9999 / 99999 on non-overlay elements → 🟡 (escalation smell)
+
+Element weight ratios:
+  → Identify the primary CTA (largest button, most prominent button by class/type)
+  → Compare its font-weight and font-size against surrounding body text
+  → Primary CTA font-weight ≤ body font-weight → 🟡 Warning (CTA doesn't feel more important)
+  → Primary CTA font-size = body font-size with no weight or color differentiation → 🟡
+
+Only run this category if:
+  → Font-size data was successfully extracted (Cat 1 extraction already done)
+  Otherwise: note "Visual hierarchy inferred from screenshot — see Cat 1 for typography data"
+```
+
 ---
 
 ### CATEGORY 5: Consistency
@@ -981,6 +1144,43 @@ Report cross-frame inconsistencies as:
 
 Only run cross-frame checks when you have context data for 2+ frames in the session.
 Single-frame audits skip this silently — do not mention it.
+```
+
+**📋 Code input: direct checks available (run these automatically)**
+```
+Multiple button implementations:
+  → Collect all button-like elements: <button>, <a role="button">, elements with onClick
+  → Group by visual role: primary (filled), secondary (outlined), ghost (text-only)
+  → If primary buttons have more than 1 unique background-color value → 🔴 Critical
+    (multiple primary button colors = broken visual language)
+  → If buttons of the same role have different border-radius values → 🟡 Warning
+  → If buttons of the same role have different font-size values → 🟡 Warning
+
+Inconsistent border-radius:
+  → Collect all border-radius values applied to cards, panels, modals, buttons, inputs
+  → Group by element type (cards together, buttons together, inputs together)
+  → More than 2 distinct radius values per element type → 🟡 Warning
+    "Cards use 3 different radius values: 4px, 8px, 12px — pick one."
+  → Arbitrary radius values (7px, 11px, 13px) not on a defined scale → 🟢 Tip
+
+Colour consistency:
+  → Collect all background-color / color values used for the same semantic role
+    (e.g. all primary button backgrounds, all body text colors)
+  → Same semantic role using 2+ different hex values (without token aliasing) → 🟡
+    "Primary button uses #7c3aed in one place and #6d28d9 in another"
+
+Duplicate style blocks:
+  → Scan for CSS rule blocks with identical property sets applied to different selectors → 🟢 Tip
+    (suggests a component opportunity — these should share a class)
+  → React/Vue: identical JSX style props repeated across 3+ components → 🟢 Tip
+
+Interaction state coverage:
+  → For each interactive element type (button, link, input, card), check:
+    → :hover defined? → ✅
+    → :focus or :focus-visible defined? → ✅
+    → :active defined? → 🟢 Tip if missing
+    → .disabled or [disabled] styled? → 🟡 if missing
+  → Inconsistency: some buttons have :hover, others don't → 🟡 Warning
 ```
 
 ---
@@ -1030,6 +1230,17 @@ When auditing HTML/React/Vue code, check directly:
   Color contrast (code path)
     → Extract foreground/background pairs from CSS, run WCAG check programmatically
     → More precise than visual estimate — cite exact ratio
+
+  SVG accessibility:
+    → Inline <svg> used decoratively (icon, illustration) without aria-hidden="true" → 🔴 Critical
+      Correct: <svg aria-hidden="true" focusable="false">...</svg>
+      Why: Screen readers announce SVG contents as text if not hidden, creating noise
+    → Inline <svg> used as a meaningful image (logo, chart, diagram) without role="img"
+      AND a <title> element → 🔴 Critical
+      Correct: <svg role="img" aria-labelledby="icon-title"><title id="icon-title">Company logo</title>...</svg>
+    → <svg> with focusable="true" (IE default) in an icon-only button → 🟡 Warning
+      (creates double tab stop — icon receives focus separately from its button wrapper)
+    → <use href="..."> referencing a <symbol> — check the <symbol> has a <title> → 🟡
 ```
 
 ---
@@ -1163,6 +1374,13 @@ If dark mode is found, check:
   Tailwind dark mode:
     → Check if darkMode: 'class' or 'media' is configured
     → Inconsistent dark: prefix usage across components → 🟡
+
+  color-scheme property:
+    → <meta name="color-scheme" content="dark light"> or CSS `color-scheme: dark light`
+      absent when dark mode IS implemented → 🟢 Tip
+      (without this, browser chrome — scrollbars, form inputs — stays light even in dark mode)
+    → color-scheme: dark (only) when the product has a light mode toggle → 🟡 Warning
+      (locks browser chrome to dark regardless of user preference)
 ```
 
 ---
@@ -1237,6 +1455,44 @@ Viewport units:
 - English: *"Here's the full picture of which states are designed and which are missing."*
 - Korean: *"어떤 상태가 디자인되어 있고 어떤 상태가 빠져 있는지 전체 현황을 확인해 보세요."*
 
+**📋 Code input: direct checks available (run these automatically)**
+```
+Loading state detection:
+  → Search for conditional renders based on loading/isLoading/isPending/isFetching flags
+  → Component fetches data (useEffect + fetch / useQuery / useSWR) with no loading branch → 🔴 Critical
+  → Loading branch renders null or nothing → 🔴 Critical
+  → Loading branch renders a spinner → ✅ (tip: skeleton preferred for content-heavy layouts)
+  → aria-live="polite" or aria-busy="true" absent on dynamically updated regions → 🟡 Warning
+    (screen readers won't announce content updates without aria-live)
+  → Correct: <div aria-live="polite" aria-busy={isLoading}> ... </div>
+
+Empty state detection:
+  → Conditional render for empty array/null data that renders null or nothing → 🔴 Critical
+    "No empty state — users see a blank screen when data is empty"
+  → Empty state renders only a text string with no action → 🟡 Warning
+    "Empty state has no next action — add a CTA or guidance"
+  → Well-formed empty state: icon/illustration + explanation + CTA → ✅
+
+Error state detection:
+  → try/catch or .catch() / isError flag with no error UI branch → 🔴 Critical
+  → Error state renders raw error.message string → 🟡 Warning
+    (technical error messages are not user-friendly — use a human message)
+  → Error state has no retry action → 🟡 Warning
+  → Well-formed error state: friendly message + retry or back action → ✅
+
+Disabled state detection:
+  → <button disabled> with no visual distinction beyond default browser style → 🟡
+  → Disabled button with no tooltip or explanation of why → 🟢 Tip
+  → cursor: not-allowed absent on disabled elements → 🟢 Tip
+
+Success state detection:
+  → Form submit handler with no success feedback (no toast, no banner, no state change) → 🟡
+  → Success message auto-dismisses before user can read it (timeout < 3000ms) → 🟡
+
+Korean report labels for this category:
+  → 로딩 상태 누락 / 빈 상태 누락 / 오류 상태 누락 / 비활성화 상태 스타일 없음 / 성공 피드백 없음
+```
+
 ---
 
 ### CATEGORY 12: Content & Microcopy
@@ -1271,9 +1527,50 @@ Per-role checks:
 - [ ] **Empty states have direction** — "No results found" alone → 🟡. Should include a next action.
 - [ ] **Required field legend** — If * is used for required fields, check for a "* Required fields" legend somewhere in the frame. Missing → 🟢 Tip.
 
----
+**📋 Code input: direct checks available (run these automatically)**
+```
+Button label audit:
+  → Collect all <button>, <a role="button">, and submit-type elements and extract their text content
+  → Labels that are not verbs or verb phrases → 🟡 Warning
+    ❌ "OK", "Yes", "Submit", "Click here", "More"
+    ✅ "Save changes", "Send message", "Get started", "Delete account"
+  → Icon-only buttons with no aria-label → 🔴 Critical (also caught by Cat 6, flag once)
+  → Button text identical to page heading (no specificity) → 🟡
+    e.g. two "Submit" buttons on the same page with no differentiating context
 
-### CATEGORY 13: Internationalization & RTL Support (if applicable)
+Error message audit:
+  → Scan all string literals used in error/validation contexts (near catch blocks, validation fns, error state renders)
+  → Strings that are purely technical → 🟡 Warning
+    ❌ "Invalid input", "Error 422", "Request failed", "null", "undefined"
+    ✅ "Please enter a valid email address", "Something went wrong — try again"
+  → Error strings with no guidance on how to fix → 🟡
+  → aria-describedby linked error messages (cross-check with Cat 7) → ✅
+
+Placeholder audit:
+  → Collect all placeholder="..." attribute values
+  → Placeholder that exactly duplicates its label text → 🟡
+    e.g. label="Email" + placeholder="Email" — redundant, adds no value
+  → Placeholder starting with "eg:", "e.g.", "ex:" → 🟡 informal prefix
+    Prefer: use the example directly — placeholder="name@example.com"
+  → Placeholder used as sole label (no visible <label>) → 🔴 (also Cat 7)
+
+Lorem ipsum / filler content:
+  → Any string containing "lorem ipsum", "placeholder text", "TBD", "TODO", "FIXME" in UI-facing strings → 🔴 Critical at Dev handoff stage
+  → Flag line number and surrounding component
+
+Terminology consistency:
+  → Collect all nouns used for the same concept across the file
+  → If 2+ different terms are used for the same entity → 🟡 Warning
+    e.g. "workspace" in one component, "project" in another, "team" in a third — all meaning the same thing
+
+Destructive action copy:
+  → Alert/confirm dialogs or delete modal text that reads only "Are you sure?" → 🟡
+    Must name the specific thing being deleted: "Delete 'Project Alpha'? This cannot be undone."
+
+Korean report labels for this category:
+  → 버튼 라벨 동사 누락 / 오류 메시지 비인간적 / 플레이스홀더 = 라벨 중복 /
+     비공식 플레이스홀더 접두사 / 로렘 입숨 발견 / 용어 불일치 / 파괴적 동작 문구 부재
+``` (if applicable)
 *Only audit this category if the product targets multiple languages or RTL locales (Arabic, Hebrew, Persian, Urdu). Read `references/i18n.md` for full guidance.*
 
 - [ ] **No hardcoded strings** — All visible text should come from a translation file, not be baked into the component. Check for any hardcoded labels, tooltips, or error messages.
@@ -1329,6 +1626,48 @@ Only run this category if:
 - [ ] **Consistent blur & offset** — A consistent offset-to-blur ratio (e.g. offset-y = 1/3 of blur) makes shadows feel physically grounded. Mismatched values look amateur.
 - [ ] **Multiple light sources** — Don't combine a top-shadow and a bottom-shadow on the same element unless intentional. Pick one light source direction and stick to it.
 
+**📋 Code input: direct checks available (run these automatically)**
+```
+box-shadow value audit:
+  → Collect all box-shadow declarations across CSS/styled-components/Tailwind
+  → Arbitrary shadow values not matching a defined scale → 🟡 Warning
+    ❌ box-shadow: 0 3px 7px rgba(0,0,0,0.11) — arbitrary, not from a scale
+    ✅ box-shadow: var(--shadow-md) or Tailwind shadow-md
+  → More than 3 distinct box-shadow values used for the same element type (e.g. cards) → 🟡
+    "Cards use 4 different shadow values — establish a shadow scale"
+
+Shadow color audit:
+  → box-shadow using pure black rgba(0,0,0,1) or #000000 → 🟡 Warning
+    "Pure black shadows look heavy — use rgba(0,0,0,0.08–0.20) for natural depth"
+  → box-shadow using an opaque color (no alpha channel) → 🟡
+  → On colored surfaces: shadow color should be tinted with the surface color, not neutral black → 🟢 Tip
+
+Elevation hierarchy check:
+  → Collect elements by type: cards, modals, dropdowns, tooltips, sticky headers
+  → Compare their shadow values — higher elements must have stronger shadows
+  → Modal shadow ≤ card shadow → 🟡 Warning (elevation hierarchy inverted)
+  → Tooltip shadow ≤ modal shadow → 🟡
+
+Multiple shadows on same element:
+  → Element with both a top and bottom box-shadow without clear design intent → 🟡
+  → More than 2 box-shadow layers on a single element → 🟡
+
+Dark mode shadow check:
+  → box-shadow retained in dark mode without override → 🟡 Warning
+    "Shadows are invisible on dark backgrounds — use a lighter surface color for elevation instead"
+  → Correct pattern: @media (prefers-color-scheme: dark) { box-shadow: none; background: [elevated-surface-color]; }
+  → Tailwind: dark:shadow-none present → ✅
+
+Blur-to-offset ratio:
+  → Extract offset-y and blur-radius from each box-shadow
+  → offset-y > blur-radius (e.g. 0 8px 4px) → 🟢 Tip (offset larger than blur looks unnatural)
+  → Recommended ratio: blur = 2–3× offset-y
+
+Korean report labels for this category:
+  → 그림자 스케일 미준수 / 순수 검정 그림자 사용 / 높낮이 계층 역전 /
+     다크 모드에서 그림자 미제거 / 블러-오프셋 비율 부적절
+```
+
 ---
 
 ### CATEGORY 15: Iconography
@@ -1342,6 +1681,35 @@ Only run this category if:
 - [ ] **Icon meaning consistency** — The same icon should mean the same thing everywhere. Don't use a star for both "favourite" and "rating" in the same product.
 - [ ] **Label pairing** — Icons without labels are ambiguous for non-expert users. Always pair with a visible label or tooltip. Exception: universally understood icons (✕ close, ☰ menu, ⌕ search).
 - [ ] **Optical alignment** — Icons often have invisible padding baked in. When aligning icons with text, align to optical center, not bounding box edge.
+
+**📋 Code input: direct checks available (run these automatically)**
+```
+Icon sizing audit:
+  → Collect all <svg>, <img>, and icon component width/height values
+  → Flag sizes not on optical grid: 16, 20, 24, 32, 40, 48px → 🟢 Tip
+    "Icon sized at 18px — optical grid values are 16px or 20px"
+  → Inconsistent sizes across icons of the same visual role → 🟡 Warning
+    "Nav icons are 20px and 24px — pick one"
+
+SVG icon accessibility:
+  → <svg> inside a <button> or <a> without aria-hidden="true" on the SVG → 🔴 Critical
+    (the SVG will be announced by screen readers — use aria-hidden on the SVG,
+     and aria-label on the parent button instead)
+  → Icon-only <button> with no aria-label and a hidden SVG → 🔴 Critical
+    (both the SVG is hidden AND there's no label — completely inaccessible)
+  → <img> used as icon without alt="" (decorative) or alt="[description]" (meaningful) → 🔴
+  → Icon font (class="fa-...", class="material-icons") with no aria-hidden and no label → 🔴
+
+Stroke weight:
+  → Multiple stroke-width values on <path> / <line> elements across icon SVGs → 🟡 Warning
+    "Icons use strokeWidth 1 and 2 — inconsistent weight"
+  → Only flag if 2+ different SVG elements are present in the same file
+
+Touch target:
+  → <button> or <a> containing only an icon with width or height < 44px and
+    no padding to compensate → 🔴 Critical
+    "Icon button is 24×24px with no padding — minimum tappable size is 44×44px"
+```
 
 ---
 
@@ -1625,9 +1993,10 @@ Deduplication also applies to scoring:
 This keeps reports scannable. A report with 3 grouped issues is more actionable than one with 15 separate entries that all say the same thing.
 
 ### Accessibility Score
-In addition to the overall score, always surface a separate **Accessibility Score** combining Categories 2, 6, 7, and 16:
+In addition to the overall score, always surface a separate **Accessibility Score** combining Categories 2, 6, 7, 15, and 16:
 
-- Start at 100, apply the same 4-tier deduction formula to issues in those 4 categories only
+- Start at 100, apply the same 4-tier deduction formula to issues in those 5 categories only
+- Cat 15 is included because it now contains WCAG Blocker-level SVG accessibility checks (aria-hidden, role="img", icon-button labels) that are legal violations, not just design opinions
 - 🚫 Blocker issues in these categories use −12 (legal violations — WCAG AA)
 - Display as: **Accessibility Score: X/100**
 - If any 🚫 Blocker issues exist: append *"⚠️ Contains legal compliance failures"*
@@ -1640,6 +2009,8 @@ Scoring bands:
 
 **Always show the maths:**
 > Score: 100 − (1 × 🚫 12) − (2 × 🔴 8) − (3 × 🟡 4) − (1 × 🟢 1) = **59/100** ⚠️ Contains legal compliance failures
+
+**Korean label:** 접근성 점수 *(Cat 2, 6, 7, 15, 16)*
 
 ---
 
@@ -1672,9 +2043,11 @@ Every audit report must use this exact structure — sections marked *(always)* 
 
 *(Figma only)*
 | Component Health | [N]% coverage · [N] detached · [N] unnamed |
+| Auto Layout      | [N]% frames using Auto Layout · [N] manual-position frames |
 | Code Connect     | [N] mapped · [N] unmapped *(if available)* |
 
 *(Code only)*
+| Design System  | [MUI / Chakra / shadcn/ui / Ant Design / Radix / None detected] |
 | Token Coverage | colors [N]% · spacing [N]% · radius [N]% |
 ```
 
@@ -1692,9 +2065,10 @@ Every audit report must use this exact structure — sections marked *(always)* 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Overall       [██████████░░░░░░░░░░]  [X]/100
-Accessibility [████████░░░░░░░░░░░░]  [X]/100  *(Cat 2, 6, 7, 16)*
+Accessibility [████████░░░░░░░░░░░░]  [X]/100  *(Cat 2, 6, 7, 15, 16)*
 Ethics        [███████████████░░░░░]  [X]/100  *(Cat 18)*
-Usability     [████████████░░░░░░░░]  [X]/100  *(Cat 19)*
+Usability     [████████████░░░░░░░░]  [X]/100  *(Cat 19 — H1/H2/H3/H6/H7/H10)*
+              ↳ H4 Consistency → Cat 5 · H5 Error Prevention → Cat 7 · H8 Aesthetics → Cat 4 · H9 Recovery → Cat 11/12
 
 Score formula: 100 − ([N] × 🚫 12) − ([N] × 🔴 8) − ([N] × 🟡 4) − ([N] × 🟢 1) = [X]/100
 
@@ -1711,12 +2085,13 @@ Score formula: 100 − ([N] × 🚫 12) − ([N] × 🔴 8) − ([N] × 🟡 4) 
 ```
 ### Score by Category
 
-| Category | Score | 🚫 | 🔴 | 🟡 | 🟢 |
-|---|---|---|---|---|---|
-| 1 · Typography | X/10 | 0 | 1 | 2 | 0 |
-| 2 · Color & Contrast | X/10 | 1 | 0 | 1 | 0 |
-| [other audited categories] | X/10 | — | — | — | — |
+| Category | Score | Bar | 🚫 | 🔴 | 🟡 | 🟢 |
+|---|---|---|---|---|---|---|
+| 1 · Typography | X/10 | ██████░░░░ | 0 | 1 | 2 | 0 |
+| 2 · Color & Contrast | X/10 | █████░░░░░ | 1 | 0 | 1 | 0 |
+| [other audited categories] | X/10 | ██████████ | — | — | — | — |
 
+*(Bar is 10 chars wide. Fill = score value. █ filled, ░ empty. Score ≤ 5 → render bar in red context.)*
 *(Only include audited categories. Use — for unchecked severity levels.)*
 ```
 
@@ -1808,7 +2183,7 @@ New:      [N] new issues found
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*Audit run with Design Auditor Skill v1.2.10 · [input type] · [confidence level]*
+*Audit run with Design Auditor Skill v1.2.11 · [input type] · [confidence level]*
 *Re-audit after fixes to track progress.*
 *수정 후 재감사를 실행하여 진행 상황을 추적하세요.*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1896,6 +2271,7 @@ After every report and radar chart, present a **"What next?" widget** using the 
 - options:
   - "Fix all Critical issues / 심각한 문제 모두 수정"
   - "Fix a specific issue / 특정 문제 수정"
+  - "Teach me the rules behind my top issues / 핵심 문제 원리 설명"
   - "Wireframe to Spec / 와이어프레임 스펙 출력"
   - "Developer handoff report / 개발자 전달 보고서"
   - "Explain an issue / 문제 설명"
@@ -1916,6 +2292,27 @@ After every report and radar chart, present a **"What next?" widget** using the 
 Never batch-apply all fixes at once without per-issue confirmation.
 
 **If "Fix a specific issue"** → present a widget listing all 🔴 and 🟡 issues by name, let the user pick one, then show the before/after diff and apply the fix.
+
+**If "Teach me the rules behind my top issues"** → pick the 3 highest-severity issues from the audit and deliver a focused design principle lesson for each. Format:
+
+```
+For each of the top 3 issues (🚫 first, then 🔴, then 🟡):
+
+  📐 Lesson [N]: [Rule name]
+  ─────────────────────────
+  The rule: [One sentence stating the design principle, not the fix]
+  Why it exists: [One sentence on the human reason — perception, cognition, law, etc.]
+  What it looks like when broken: [Real-world analogy or concrete example]
+  What it looks like when fixed: [Concrete before/after contrast]
+  Where to learn more: [Relevant reference — WCAG SC, Nielsen heuristic, known article title]
+```
+
+- Use plain language — this mode targets learners, not experts
+- If beginner mode is active: no jargon, maximum one technical term per lesson with an inline definition
+- If experienced mode: go deeper, cite the cognitive science or perceptual research behind the rule
+- Korean: deliver the full lesson in Korean if the user's language is Korean
+- After the 3 lessons: *"Apply any of these fixes? I can edit the code or Figma directly."*
+  Korean: *"수정을 도와드릴까요? 코드나 Figma에서 직접 변경할 수 있습니다."*
 
 **If "Explain an issue"** → present a widget listing all issues found. When one is selected:
 - Explain what the rule is and why it exists (1–2 sentences)
@@ -2009,6 +2406,14 @@ If the user shares updated code or a new Figma link before selecting Re-audit:
 - [warning 2]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🟢  TIPS — polish level, nice to have
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*(Omit section if no Tips)*
+
+- [tip 1]
+- [tip 2]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅  WHAT'S ALREADY CORRECT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -2016,8 +2421,8 @@ If the user shares updated code or a new Figma link before selecting Re-audit:
 - [positive 2]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*Generated by Design Auditor Skill v1.2.10*
-*Design Auditor Skill v1.2.10 생성*
+*Generated by Design Auditor Skill v1.2.11*
+*Design Auditor Skill v1.2.11 생성*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -2031,9 +2436,10 @@ If the user shares updated code or a new Figma link before selecting Re-audit:
   - `♿ 접근성 체크리스트`
   - `🔵 코드 커넥트 매핑` *(사용 가능한 경우)*
   - `🟡 경고 — 비차단, 수정 권장`
+  - `🟢 팁 — 마감 수준, 선택 사항` · *(팁 없으면 섹션 생략)*
   - `✅ 이미 올바른 항목`
 - Table column headers: `이슈` · `위치` · `수정 방법` · `법적 근거` · `정확한 값` · `속성` · `현재값` · `올바른 값` · `토큰` · `Figma 컴포넌트` · `코드 컴포넌트` · `상태`
-- Footer: `*Design Auditor Skill v1.2.10 생성*`
+- Footer: `*Design Auditor Skill v1.2.11 생성*`
 
 **If "Export report"** → create a downloadable `.md` file via file_create containing:
 - The full audit report in the Strict Output Template format
@@ -2060,7 +2466,7 @@ Content to include in the Canva doc:
   3. Issue summary table: 🚫 [N] Blockers · 🔴 [N] Critical · 🟡 [N] Warnings · 🟢 [N] Tips
   4. Top 3 critical issues with one-line fix each
   5. What's working well (2–3 positives)
-  6. Footer: "Generated by Design Auditor Skill v1.2.10"
+  6. Footer: "Generated by Design Auditor Skill v1.2.11"
 
 After generating:
   → Present the Canva design to the user
@@ -2164,8 +2570,8 @@ If Canva connector is unavailable:
 - [ ] [Question about loading state if this fetches data]
 
 ---
-*Generated by Design Auditor Skill v1.2.10 · Wireframe to Spec mode*
-*디자인 스펙 문서 · Design Auditor Skill v1.2.10 생성*
+*Generated by Design Auditor Skill v1.2.11 · Wireframe to Spec mode*
+*디자인 스펙 문서 · Design Auditor Skill v1.2.11 생성*
 *Values marked ~ are estimated. Confirm with designer before development.*
 *~ 표시 값은 추정치입니다. 개발 전 디자이너에게 확인하세요.*
 ```

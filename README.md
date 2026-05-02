@@ -14,12 +14,18 @@ Compatible with **Claude**, **Manus**, and other agents that support SKILL.md-ba
 
 Drop in a Figma link, paste your CSS, upload a screenshot, or share a wireframe — Design Auditor checks your work against 19 categories of design rules and gives you:
 
-- A **score out of 100** with per-category breakdown
-- A separate **Accessibility Score** (WCAG coverage across Cat 2, 6, 7, 16)
-- A separate **Ethics Score** (dark patterns and manipulative design across Cat 19)
+- A **score out of 100** with per-category breakdown (with mini bar chart per row)
+- A separate **Accessibility Score** (WCAG coverage across Cat 2, 6, 7, 15, 16)
+- A separate **Ethics Score** (dark patterns and manipulative design across Cat 18)
+- A separate **Usability Score** (Cat 19 — H1/H2/H3/H6/H7/H10, with Nielsen cross-reference for H4/H5/H8/H9)
 - A **🚫 Blocker tier** for legal/compliance violations (WCAG AA, GDPR, PECR) — separate from Critical issues
 - Issues ranked by severity (🚫 Blocker / 🔴 Critical / 🟡 Warning / 🟢 Tip)
+- **Color blindness context** — every failing color pair annotated with the affected blindness type
+- **SVG accessibility checks** — decorative vs. meaningful SVG patterns, aria-hidden, role="img"
+- **Design System detection** — MUI, Chakra, shadcn/ui, Ant Design, Radix, Bootstrap (system-specific fixes)
+- **Figma Auto Layout scan** — detects frames using manual positioning where Auto Layout should be used
 - **Plain-language explanations** of *why* each rule matters
+- **"Teach Me" mode** — explains the design principles behind your top 3 issues, not just the fixes
 - An **Issue Priority Matrix** — every issue plotted by effort vs. impact
 - Before/after code diffs when fixing issues in HTML/CSS/React/Vue
 - Direct fixes in your **Figma file** via Figma MCP
@@ -52,7 +58,7 @@ Drop in a Figma link, paste your CSS, upload a screenshot, or share a wireframe 
 | 15 | **Iconography** | Icon families, optical sizing, touch targets, meaning consistency |
 | 16 | **Navigation Patterns** | Tabs, breadcrumbs, back buttons, mobile nav, active states |
 | 17 | **Design Tokens & Variables** | Semantic naming, hardcoded values, dark mode token swapping |
-| 19 | **Ethical Design & Dark Patterns** | Confirmshaming, false urgency, pre-checked consent, CTA hierarchy inversion, privacy zuckering, hidden costs, and 15 more manipulative patterns across 5 groups |
+| 18 | **Ethical Design & Dark Patterns** | Confirmshaming, false urgency, pre-checked consent, CTA hierarchy inversion, privacy zuckering, hidden costs, and 15 more manipulative patterns across 5 groups |
 | 19 | **Nielsen's 10 Usability Heuristics Rules** | Nielsen's 10 Usability Heuristics are the most widely used framework for evaluating interface usability. They were developed by Jakob Nielsen and are grounded in decades of usability research |
 
 ---
@@ -156,13 +162,32 @@ design-auditor/
     ├── states.md                   — Loading, empty, error, success states + code checks
     ├── microcopy.md                — Button labels, errors, tone, per-role audit guide
     ├── animation.md                — Easing curves, duration scales, reduced motion, code checks
-    ├── i19n.md                     — RTL support, locale formatting, i19n
+    ├── i18n.md                     — RTL support, locale formatting, i18n
     └── ethics.md                   — Dark patterns, ethical design, persuasion vs manipulation
 ```
 
 ---
 
 ## Changelog
+
+### v1.2.11
+
+**Code parity, design system detection, accessibility improvements, and bug fixes.**
+
+- **Code superpowers** — added `📋 Code input:` blocks to Cat 4 (Visual Hierarchy), Cat 5 (Consistency), Cat 11 (States), Cat 12 (Microcopy), Cat 14 (Elevation), Cat 15 (Iconography) — completing all 19 categories
+- **Design System detection** — auto-detects MUI, Chakra UI, shadcn/ui, Ant Design, Radix, Bootstrap; system-specific issue types and fix paths
+- **Color blindness context** — every failing color pair annotated with affected blindness type (Deuteranopia, Protanopia, Tritanopia)
+- **SVG accessibility** — decorative `aria-hidden`, meaningful `role="img"` + `<title>`, icon-button label checks across Cat 6 and Cat 15
+- **Figma Auto Layout scan** — detects frames using manual positioning where Auto Layout should be used; shown in report header
+- **Accessibility Score** — expanded from Cat 2/6/7/16 to Cat 2/6/7/**15**/16 (Cat 15 SVG checks are WCAG legal violations)
+- **Nielsen cross-reference** — H4/H5/H8/H9 mapped in scores panel to Cat 5/7/4/11–12
+- **"Teach Me" mode** — explains design principles behind top 3 issues (beginner + expert depth, full Korean)
+- **Scoring formula** — Blockers now explicit in formula: `100 − (blockers × 12) − (criticals × 8) − (warnings × 4) − (tips × 1)`
+- **Dev Handoff Report** — added missing 🟢 Tips section; restructured with `━━━` dividers throughout
+- **Output** — mini bar column in Score by Category table; Design System + Auto Layout rows in report header; Cat 9 `color-scheme` meta tag check
+- **Bug fixes** — category count "17" → "19" throughout; Cat 18/19 numbering corrected; `i19n.md` typo → `i18n.md`; Korean README category count corrected
+
+------------------------------------------------------------------------------------------------------------------------------------------
 
 ### v1.2.10
 
