@@ -281,3 +281,13 @@ MIT — 사용, 포크, 빌드 모두 자유롭게 가능합니다.
 ---
 
 *[Claude](https://claude.ai)로 제작 · 스킬 형식: [Anthropic](https://anthropic.com)*
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=Ashutos1997%2Fclaude-design-auditor-skill&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Ashutos1997/claude-design-auditor-skill&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Ashutos1997/claude-design-auditor-skill&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Ashutos1997/claude-design-auditor-skill&type=date&legend=top-left" />
+ </picture>
+</a>
