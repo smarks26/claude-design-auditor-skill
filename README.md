@@ -199,6 +199,25 @@ design-auditor/
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 
+### v1.2.11
+
+**Code parity, design system detection, accessibility improvements, and bug fixes.**
+
+- **Code superpowers** — added `📋 Code input:` blocks to Cat 4 (Visual Hierarchy), Cat 5 (Consistency), Cat 11 (States), Cat 12 (Microcopy), Cat 14 (Elevation), Cat 15 (Iconography) — completing all 19 categories
+- **Design System detection** — auto-detects MUI, Chakra UI, shadcn/ui, Ant Design, Radix, Bootstrap; system-specific issue types and fix paths
+- **Color blindness context** — every failing color pair annotated with affected blindness type (Deuteranopia, Protanopia, Tritanopia)
+- **SVG accessibility** — decorative `aria-hidden`, meaningful `role="img"` + `<title>`, icon-button label checks across Cat 6 and Cat 15
+- **Figma Auto Layout scan** — detects frames using manual positioning where Auto Layout should be used; shown in report header
+- **Accessibility Score** — expanded from Cat 2/6/7/16 to Cat 2/6/7/**15**/16 (Cat 15 SVG checks are WCAG legal violations)
+- **Nielsen cross-reference** — H4/H5/H8/H9 mapped in scores panel to Cat 5/7/4/11–12
+- **"Teach Me" mode** — explains design principles behind top 3 issues (beginner + expert depth, full Korean)
+- **Scoring formula** — Blockers now explicit: `100 − (blockers × 12) − (criticals × 8) − (warnings × 4) − (tips × 1)`
+- **Dev Handoff Report** — added missing 🟢 Tips section; Korean translation included
+- **Output** — mini bar column in Score by Category table; Design System + Auto Layout rows in report header; Cat 9 `color-scheme` meta tag check
+- **Bug fixes** — category count "17" → "19" throughout; Cat 18/19 numbering corrected; `i19n.md` → `i18n.md`; Korean README category count corrected
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
 ### v1.2.10
 
 **Dev Handoff Report, Wireframe to Spec — restructured. Korean coverage for both.**
